@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: shortlink
+      POSTGRES_PASSWORD: shortlink
+      POSTGRES_DB: shortlink
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shortlink"]
+      interval: 3s
+      retries: 10
+    volumes: [pgdata:/var/lib/postgresql/data]
+  api:
+    build: .
+    depends_on:
+      db: {condition: service_healthy}
+    environment:
+      DATABASE_URL: postgresql://shortlink:shortlink@db:5432/shortlink
+      SECRET_KEY: change-me
+      BASE_URL: http://localhost:8000
+    ports: ["8000:8000"]
+volumes:
+  pgdata:
